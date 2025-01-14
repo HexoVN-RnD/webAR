@@ -11,25 +11,163 @@
     <a-scene mindar-image="imageTargetSrc: ./targets2.mind; filterMinCF:0.0001; filterBeta: 0.0001"
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
+            <!-- Existing assets -->
             <img id="card" src="./Photo2.jpg" />
             <a-asset-item id="avatarModel" src="./wedding_cake.glb"></a-asset-item>
+
+            <!-- Gallery assets -->
+            <img id="btn-prev" src="./assets/prev.png">
+            <img id="btn-next" src="./assets/next.png">
+            <img id="btn-play" src="./assets/play.png">
+            <img id="btn-pause" src="./assets/pause.png">
+
+            <!-- Add your gallery items here -->
+            <video id="video1" src="./1001.webm" preload="auto" response-type="arraybuffer"></video>
+            <video id="video2" src="./kv_neon_webm.webm" preload="auto" response-type="arraybuffer"></video>
+            <img id="image1" src="./Photo.jpg">
+            <img id="image2" src="./Photo2.jpg">
         </a-assets>
 
-
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
+        <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"
+            raycaster="far: 10000; objects: .clickable">
+        </a-camera>
 
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-plane src="#card" position="0 0 0" height="0.8" width="1" rotation="0 0 0"></a-plane>
-            <a-gltf-model rotation="90 0 0" position="0 0 0.5" scale="1 1 1" src="#avatarModel"
-                animation="property: rotation; to: 90 0 0; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
-                <!-- <a-video src="kv_neon_webm.webm" position="0 0 0.1" height="1" width="1" rotation="0 0 0" preload="auto"></a-video> -->
-                <!-- <a-video src="1001.webm"  position="0 0 0.1" width=".96" height=".54" rotation="0 0 0" preload="auto"></a-video> -->
+            <a-entity id="gallery-container" position="0 0 0" gallery-handler>
+                <!-- Content wrappers -->
+                <a-entity id="content-wrapper">
+                    <!-- Image 1 -->
+                    <a-plane id="image1-display" position="0 0 0.1" height="0.8" width="1" material="src: #image1"
+                        visible="true" class="clickable content-item">
+                    </a-plane>
+                    <a-text id="image1-text" value="First Image Title" position="0 -0.5 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="true">
+                    </a-text>
+
+                    <!-- Image 2 -->
+                    <a-plane id="image2-display" position="0 0 0.1" height="0.8" width="1" material="src: #image2"
+                        visible="false" class="clickable content-item">
+                    </a-plane>
+                    <a-text id="image2-text" value="Second Image Title" position="0 -0.5 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="false">
+                    </a-text>
+
+                    <!-- Video 1 -->
+                    <a-video id="video1-display" position="0 0 0.1" height="0.8" width="1" src="#video1" visible="false"
+                        class="clickable content-item">
+                    </a-video>
+                    <a-text id="video1-text" value="First Video Title" position="0 -0.5 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="false">
+                    </a-text>
+
+                    <!-- Video 2 -->
+                    <a-video id="video2-display" position="0 0 0.1" height="0.8" width="1" src="#video2" visible="false"
+                        class="clickable content-item">
+                    </a-video>
+                    <a-text id="video2-text" value="Second Video Title" position="0 -0.5 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="false">
+                    </a-text>
+                </a-entity>
+
+                <!-- Navigation buttons -->
+                <a-image id="prev-btn" src="#btn-prev" position="-0.6 0 0.2" height="0.15" width="0.15"
+                    class="clickable"
+                    animation__scale="property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__position="property: position; to: -0.6 0.05 0.2; dur: 2000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__hover="property: scale; to: 1.5 1.5 1.5; startEvents: mouseenter; dur: 300; dir: normal"
+                    animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 300; dir: normal">
+                </a-image>
+
+                <a-image id="next-btn" src="#btn-next" position="0.6 0 0.2" height="0.15" width="0.15" class="clickable"
+                    animation__scale="property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__position="property: position; to: 0.6 0.05 0.2; dur: 2000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__hover="property: scale; to: 1.5 1.5 1.5; startEvents: mouseenter; dur: 300; dir: normal"
+                    animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 300; dir: normal">
+                </a-image>
+
+                <a-image id="play-btn" src="#btn-play" position="0 -0.8 0.2" height="0.15" width="0.15" visible="false"
+                    class="clickable"
+                    animation__scale="property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__position="property: position; to: 0 -0.7 0.2; dur: 2000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__hover="property: scale; to: 1.5 1.5 1.5; startEvents: mouseenter; dur: 300; dir: normal"
+                    animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 300; dir: normal">
+                </a-image>
+            </a-entity>
         </a-entity>
-    </a-scene>
 
-    <script src="./index.js"></script>
+        <script>
+            AFRAME.registerComponent('gallery-handler', {
+                init: function () {
+                    const galleryItems = [
+                        { type: 'image', id: '#image1', displayId: 'image1-display', textId: 'image1-text' },
+                        { type: 'image', id: '#image2', displayId: 'image2-display', textId: 'image2-text' },
+                        { type: 'video', id: '#video1', displayId: 'video1-display', textId: 'video1-text' },
+                        { type: 'video', id: '#video2', displayId: 'video2-display', textId: 'video2-text' }
+                    ];
+
+                    let currentIndex = 0;
+                    const playBtn = document.querySelector('#play-btn');
+
+                    // Next button
+                    document.querySelector('#next-btn').addEventListener('click', () => {
+                        console.log('Next clicked');
+                        hideCurrentItem();
+                        currentIndex = (currentIndex + 1) % galleryItems.length;
+                        showCurrentItem();
+                    });
+
+                    // Previous button
+                    document.querySelector('#prev-btn').addEventListener('click', () => {
+                        console.log('Prev clicked');
+                        hideCurrentItem();
+                        currentIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
+                        showCurrentItem();
+                    });
+
+                    // Play/Pause button
+                    playBtn.addEventListener('click', () => {
+                        const currentItem = galleryItems[currentIndex];
+                        if (currentItem.type === 'video') {
+                            const video = document.querySelector(currentItem.id);
+                            if (video.paused) {
+                                video.play();
+                                playBtn.setAttribute('src', '#btn-pause');
+                            } else {
+                                video.pause();
+                                playBtn.setAttribute('src', '#btn-play');
+                            }
+                        }
+                    });
+
+                    // Update hideCurrentItem function
+                    function hideCurrentItem() {
+                        const currentItem = galleryItems[currentIndex];
+                        document.querySelector(`#${currentItem.displayId}`).setAttribute('visible', false);
+                        document.querySelector(`#${currentItem.textId}`).setAttribute('visible', false);
+                    }
+
+                    function showCurrentItem() {
+                        const currentItem = galleryItems[currentIndex];
+                        document.querySelector(`#${currentItem.displayId}`).setAttribute('visible', true);
+                        document.querySelector(`#${currentItem.textId}`).setAttribute('visible', true);
+
+                        // Show/hide play button based on content type
+                        playBtn.setAttribute('visible', currentItem.type === 'video');
+
+                        // Reset all videos
+                        if (currentItem.type === 'video') {
+                            const video = document.querySelector(currentItem.id);
+                            video.pause();
+                            video.currentTime = 0;
+                            playBtn.setAttribute('src', '#btn-play');
+                        }
+                    }
+
+                    // Show initial item
+                    showCurrentItem();
+                }
+            });
+        </script>
 </body>
-
 
 </html>
