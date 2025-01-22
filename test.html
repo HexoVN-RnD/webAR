@@ -18,7 +18,7 @@ import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gsta
   // Initialize Firestore
   const db = getFirestore(app);
 
-  async function addNumbers() {
+  async function resetNumbers() {
     try {
       const numbers = Array.from({length: 99}, (_, i) => i + 1);
       await setDoc(doc(db, "default", "numbers"), {
@@ -29,6 +29,38 @@ import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gsta
       console.error("Error adding numbers: ", error);
     }
   }
+
+  async function addNumbers() {
+    try {
+        // Get existing document
+        const docRef = doc(db, "default", "numbers");
+        const docSnap = await getDocs(docRef);
+        
+        // Get current data or initialize empty
+        const currentData = docSnap.exists() ? docSnap.data() : {};
+        const existingNumbers = currentData.availableNumbers || [];
+        const existingPicked = currentData.pickedNumber || {};
+
+        // Create array of numbers 1-99
+        const allNumbers = Array.from({length: 99}, (_, i) => i + 1);
+        
+        // Filter out already existing numbers
+        const newNumbers = allNumbers.filter(num => !existingNumbers.includes(num));
+        
+        // Merge arrays
+        const updatedNumbers = [...existingNumbers, ...newNumbers];
+
+        // Update document with merged data
+        await setDoc(docRef, {
+            availableNumbers: updatedNumbers,
+            pickedNumber: existingPicked
+        }, { merge: true });
+
+        console.log("Numbers updated successfully");
+    } catch (error) {
+        console.error("Error updating numbers: ", error);
+    }
+}
 
   addNumbers();
 
