@@ -145,7 +145,6 @@ AFRAME.registerComponent('scene-handler', {
 
         // Confirmation handlers
         document.getElementById('cancel-btn').addEventListener('click', () => {
-            arSystem.stop();
             confirmationOverlay.style.opacity = '0';
             setTimeout(() => {
                 confirmationOverlay.style.display = 'none';
@@ -362,15 +361,31 @@ document.getElementById('edit-name').addEventListener('click', () => {
     }, 500);
 });
 
+// Edit Name Cancel Button
 document.getElementById('edit-name-cancel-btn').addEventListener('click', () => {
-    document.getElementById('edit-name-overlay').style.opacity = '0';
+    const editNameOverlay = document.getElementById('edit-name-overlay');
+    const userInfo = document.getElementById('user-info');
+    const arSystem = document.querySelector('a-scene').systems["mindar-image-system"];
+
+    // Hide edit-name overlay
+    editNameOverlay.style.opacity = '0';
     setTimeout(() => {
-        document.getElementById('edit-name-overlay').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        setTimeout(() => document.getElementById('user-info').style.opacity = '1', 50);
+        editNameOverlay.style.display = 'none';
+        
+        // Show user info
+        userInfo.style.display = 'block';
+        setTimeout(() => {
+            userInfo.style.opacity = '1';
+            
+            // Restart AR system
+            if (arSystem) {
+                arSystem.start();
+            }
+        }, 50);
     }, 500);
 });
 
+// Edit Name Save Button
 document.getElementById('edit-name-save-btn').addEventListener('click', async () => {
     const newName = document.getElementById('edit-name-input').value.trim();
     const number = document.getElementById('user-number').textContent.trim();
@@ -386,14 +401,21 @@ document.getElementById('edit-name-save-btn').addEventListener('click', async ()
                 const personalMessage = document.querySelector('#personal-message');
                 personalMessage.setAttribute('troika-text', `value:${newName} đã chọn số ${number}`);
 
-                document.getElementById('edit-name-overlay').style.opacity = '0';
+                const editNameOverlay = document.getElementById('edit-name-overlay');
+                const userInfo = document.getElementById('user-info');
+                const arSystem = document.querySelector('a-scene').systems["mindar-image-system"];
+
+                // Hide edit-name overlay
+                editNameOverlay.style.opacity = '0';
                 setTimeout(() => {
-                    document.getElementById('edit-name-overlay').style.display = 'none';
-                    document.getElementById('user-info').style.display = 'block';
+                    editNameOverlay.style.display = 'none';
+                    
+                    // Show user info
+                    userInfo.style.display = 'block';
                     setTimeout(() => {
-                        document.getElementById('user-info').style.opacity = '1';
-                        // Start AR system after updating the name
-                        const arSystem = document.querySelector('a-scene').systems["mindar-image-system"];
+                        userInfo.style.opacity = '1';
+                        
+                        // Restart AR system
                         if (arSystem) {
                             arSystem.start();
                         }
@@ -410,4 +432,3 @@ document.getElementById('edit-name-save-btn').addEventListener('click', async ()
         alert("Please enter a valid name.");
     }
 });
-

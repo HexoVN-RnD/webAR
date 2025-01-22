@@ -27,7 +27,7 @@
 <body>
     <!-- Update input overlay -->
     <div id="name-input-overlay" class="popup-overlay"
-        style="display: flex; background: rgba(0,0,0,0.8); transition: opacity 0.5s;">
+        style="display: none; background: rgba(0,0,0,0.8); transition: opacity 0.5s;">
         <div id="name-input-container" class="popup-container"
             style="background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 0 15px rgba(0,0,0,0.6); max-width: 300px;">
             <h2 style="font-family: sans-serif; margin-bottom: 10px;">Xin chào!</h2>
@@ -35,12 +35,12 @@
             <input type="text" id="name-input" placeholder="Tên"
                 style="width: 100%; margin-bottom: 10px; padding: 8px;">
             <!-- Replace the number buttons div with this -->
-            <div class="loader" id="number-loader"></div>
             <div class="number-buttons-container" id="number-buttons">
                 <button id="number-btn-1" class="number-btn"></button>
                 <button id="number-btn-2" class="number-btn"></button>
                 <button id="number-btn-3" class="number-btn"></button>
             </div>
+            <div class="loader" id="number-loader"></div>
             <button id="reset-btn"
                 style="padding: 8px 16px; margin: 5px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Đổi
                 số</button>

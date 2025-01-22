@@ -101,17 +101,12 @@ export async function checkAndUpdateNumber(name, number) {
             const data = docSnap.data();
             const pickedNumbers = data.pickedNumber || {};
 
-            // Check if number already picked
             if (pickedNumbers[number]) {
                 return { success: false, message: `Số ${number} đã được chọn bởi ${pickedNumbers[number]}` };
             }
 
-            // Update the document
-            const availableNumbers = data.availableNumbers.filter(n => n !== parseInt(number));
-            const newPickedNumbers = {
-                ...pickedNumbers,
-                [number]: name
-            };
+            const availableNumbers = data.availableNumbers.filter(n => n !== number);
+            const newPickedNumbers = { ...pickedNumbers, [number]: name };
 
             await setDoc(docRef, {
                 availableNumbers: availableNumbers,
@@ -119,15 +114,17 @@ export async function checkAndUpdateNumber(name, number) {
             });
 
             return { success: true };
+        } else {
+            return { success: false, message: "Không tìm thấy tài liệu." };
         }
     } catch (error) {
         console.error("Error updating numbers: ", error);
-        return { success: false, message: "Lỗi kết nối, vui lòng thử lại" };
+        return { success: false, message: "Có lỗi xảy ra." };
     }
 }
 
 // Export the updateName function
-export async function updateName(name, number) {
+export async function updateName(newName, number) {
     try {
         const docRef = doc(db, "default", "numbers");
         const docSnap = await getDoc(docRef);
@@ -137,26 +134,22 @@ export async function updateName(name, number) {
             const pickedNumbers = data.pickedNumber || {};
 
             if (!pickedNumbers[number]) {
-                return { success: false, message: `Số ${number} chưa được chọn` };
+                return { success: false, message: "Số đã được chọn bởi người khác." };
             }
 
-            // Update the name for the number
-            const updatedPickedNumbers = {
-                ...pickedNumbers,
-                [number]: name
-            };
+            pickedNumbers[number] = newName;
 
             await setDoc(docRef, {
-                pickedNumber: updatedPickedNumbers
+                pickedNumber: pickedNumbers
             }, { merge: true });
 
             return { success: true };
         } else {
-            return { success: false, message: 'Document does not exist' };
+            return { success: false, message: "Không tìm thấy tài liệu." };
         }
     } catch (error) {
         console.error("Error updating name: ", error);
-        return { success: false, message: "Lỗi kết nối, vui lòng thử lại" };
+        return { success: false, message: "Có lỗi xảy ra." };
     }
 }
 
