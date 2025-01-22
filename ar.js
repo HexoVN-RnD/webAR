@@ -442,3 +442,11 @@ document.getElementById('edit-name-save-btn').addEventListener('click', async ()
         alert("Please enter a valid name.");
     }
 });
+
+// Add event listener to reset selection when reset button is pressed
+document.getElementById('reset-btn').addEventListener('click', () => {
+    // Unselect all number buttons
+    document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
+    // Reset the selectedNumber variable
+    selectedNumber = null;
+});
