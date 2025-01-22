@@ -1,0 +1,48 @@
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+
+      apiKey: "AIzaSyBSvYwZ5VQ5r42zEXx8aLACkln8HVgjqQE",
+      authDomain: "yep2025-3f1d9.firebaseapp.com",
+      projectId: "yep2025-3f1d9",
+      storageBucket: "yep2025-3f1d9.firebasestorage.app",
+      messagingSenderId: "482933449467",
+      appId: "1:482933449467:web:d63d2949359905e13b465e"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  
+  // Initialize Firestore
+  const db = getFirestore(app);
+
+  async function addNumbers() {
+    try {
+      const numbers = Array.from({length: 99}, (_, i) => i + 1);
+      await setDoc(doc(db, "default", "numbers"), {
+        availableNumbers: numbers
+      });
+      console.log("Numbers added successfully");
+    } catch (error) {
+      console.error("Error adding numbers: ", error);
+    }
+  }
+
+  addNumbers();
+
+  // Function to read from a collection
+  async function getDocuments() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "default"));
+      querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} =>`, doc.data());
+      });
+    } catch (error) {
+      console.error("Error getting documents: ", error);
+    }
+  }
+  // Call the function
+  getDocuments();
+</script>
