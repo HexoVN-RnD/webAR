@@ -2,34 +2,248 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
+    <!-- Remove the text-geometry-component import -->
+    <!-- Add Three.js and TextGeometry imports -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module">
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+        window.TextGeometry = TextGeometry;
+    </script>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <a-scene mindar-image="imageTargetSrc: ./targets2.mind; filterMinCF:0.0001; filterBeta: 0.0001"
+    <!-- Update input overlay -->
+    <div id="name-input-overlay" class="popup-overlay"
+        style="display: none; background: rgba(0,0,0,0.8); transition: opacity 0.5s;">
+        <div id="name-input-container" class="popup-container"
+            style="background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 0 15px rgba(0,0,0,0.6); max-width: 300px;">
+            <h2 style="font-family: sans-serif; margin-bottom: 10px;">Xin chào!</h2>
+            <p style="font-family: sans-serif; margin-bottom: 10px;">Vui lòng nhập tên và chọn số</p>
+            <input type="text" id="name-input" placeholder="Tên"
+                style="width: 100%; margin-bottom: 10px; padding: 8px;">
+            <!-- Replace the number buttons div with this -->
+            <div class="number-buttons-container" id="number-buttons">
+                <button id="number-btn-1" class="number-btn"></button>
+                <button id="number-btn-2" class="number-btn"></button>
+                <button id="number-btn-3" class="number-btn"></button>
+            </div>
+            <div class="loader" id="number-loader"></div>
+            <button id="reset-btn"
+                style="padding: 8px 16px; margin: 5px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Đổi
+                số</button>
+            <button id="name-submit" class="confirm-button"
+                style="background: #4CAF50; color: #fff; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px;">Tiếp
+                tục</button>
+        </div>
+    </div>
+
+    <!-- Add confirmation popup -->
+    <div id="confirmation-overlay" class="popup-overlay"
+        style="display: none; background: rgba(0,0,0,0.8); transition: opacity 0.5s;">
+        <div class="popup-container"
+            style="background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 0 15px rgba(0,0,0,0.6); max-width: 300px;">
+            <h2 style="font-family: sans-serif; margin-bottom: 10px;">Xác nhận thông tin</h2>
+            <p style="font-family: sans-serif; margin-bottom: 10px;">Tên: <span id="confirm-name"></span></p>
+            <p style="font-family: sans-serif; margin-bottom: 10px;">Số đã chọn: <span id="confirm-number"></span></p>
+            <div class="popup-buttons" style="display: flex; justify-content: center;">
+                <button id="cancel-btn" class="cancel-button"
+                    style="background: #f44336; color: #fff; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; margin-right: 10px;">Sửa</button>
+                <button id="continue-btn" class="confirm-button"
+                    style="background: #4CAF50; color: #fff; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px;">Tiếp
+                    tục</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add user info display -->
+    <div id="user-info">
+        Tên đã nhập: "<span id="user-name"></span>"<br>
+        Số đã chọn: "<span id="user-number"></span>"
+        <button id="edit-name">Sửa tên</button>
+    </div>
+
+    <!-- Add name edit popup -->
+    <div id="edit-name-overlay" class="popup-overlay"
+        style="display: none; background: rgba(0,0,0,0.8); transition: opacity 0.5s;">
+        <div class="popup-container"
+            style="background: #fff; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 0 15px rgba(0,0,0,0.6); max-width: 300px;">
+            <h2 style="font-family: sans-serif; margin-bottom: 10px;">Sửa tên</h2>
+            <input type="text" id="edit-name-input" placeholder="Tên"
+                style="width: 100%; margin-bottom: 10px; padding: 8px;">
+            <div class="popup-buttons" style="display: flex; justify-content: center;">
+                <button id="edit-name-cancel-btn" class="cancel-button"
+                    style="background: #f44336; color: #fff; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; margin-right: 10px;">Hủy</button>
+                <button id="edit-name-save-btn" class="confirm-button"
+                    style="background: #4CAF50; color: #fff; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px;">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add autoStart parameter to a-scene -->
+    <a-scene mindar-image="imageTargetSrc: ./targets2.mind; filterMinCF:0.0001; filterBeta: 0.0001; autoStart: false"
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         <a-assets>
+            <!-- Existing assets -->
             <img id="card" src="./Photo2.jpg" />
             <a-asset-item id="avatarModel" src="./wedding_cake.glb"></a-asset-item>
+            <!-- Add logo asset -->
+            <img id="logo" src="./assets/logo.png">
+            <!-- Gallery assets -->
+            <img id="btn-prev" src="./assets/prev.png">
+            <img id="btn-next" src="./assets/next.png">
+            <img id="btn-play" src="./assets/play.png">
+            <img id="btn-pause" src="./assets/pause.png">
+            <img id="gallery-icon" src="./assets/gallery.png">
+
+            <!-- Add your gallery items here -->
+            <video id="video1" src="./1001.webm" preload="auto" response-type="arraybuffer"></video>
+            <video id="video2" src="./kv_neon_webm.webm" preload="auto" response-type="arraybuffer"></video>
+            <img id="image1" src="./Photo.jpg">
+            <img id="image2" src="./Photo2.jpg">
+            <a-asset-item id="fireworkModel" src="./firework.glb"></a-asset-item>
         </a-assets>
 
+        <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"
+            raycaster="far: 100000; objects: .clickable">
+        </a-camera>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <!-- Update the main entity to include scene-handler -->
+        <a-entity mindar-image-target="targetIndex: 0" scene-handler>
+            <!-- Updated logo and welcome text -->
+            <a-image id="ar-logo" src="#logo" position="0 0.9 0" width="1.2" height="0.4">
+            </a-image>
+            <a-entity position="0 0.6 0">
+                <a-text value="Year End Party" align="center" width="2" color="#FFF" position="0 0 0.1" scale="1 1 1"
+                    baseline="center" anchor="center" wrapCount="16"
+                    animation="property: scale; to: 1.1 1.1 1.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+                </a-text>
+            </a-entity>
 
+            <!-- Update welcome text structure -->
+            <a-entity id="welcome-text" position="0 0 0" visible="false">
+                <!-- Main welcome text with 3D effect -->
+                <a-entity id="main-welcome"
+                    troika-text="value: Chúc mừng; color: #FFD700; fontSize: 0.5; outlineWidth: 0.02; outlineColor: #FF00FF; align: center; anchor: center; baseline: middle; letterSpacing: 0.5;"
+                    troika-text-material="shader: standard; metalness: 1; roughness: 0; emissive: #FFF700; side: double"
+                    position="0 0.2 0.1" scale="0.2 0.2 0.2"
+                    animation__rotate="property: rotation; to: 0 360 0; dur: 5000; easing: linear; loop: true"
+                    animation__scale="property: scale; to: 0.25 0.25 0.25; dur: 1000; dir: alternate; loop: true">
+                </a-entity>
 
-        <a-entity mindar-image-target="targetIndex: 0">
-            <!-- <a-plane src="#card" position="0 0 0" height="0.8" width="1" rotation="0 0 0"></a-plane>
-            <a-gltf-model rotation="90 0 0" position="0 0 0.5" scale="1 1 1" src="#avatarModel"
-                animation="property: rotation; to: 90 0 0; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"> -->
-                <a-video src="kv_neon_webm.webm" position="0 0 0.1" height="1" width="1" rotation="0 0 0" preload="auto"></a-video>
-                <!-- <a-video src="1001.webm"  position="0 0 0.1" width=".96" height=".54" rotation="0 0 0" preload="auto"></a-video> -->
+                <!-- Personal message with 3D effect -->
+                <a-entity id="personal-message-wrapper" position="0 0 0">
+                    <a-entity id="personal-message"
+                        troika-text="value: test; color: #00ff00; fontSize: 0.4; outlineWidth: 0.005; outlineColor: #FFFFFF; align: center;"
+                        troika-text-material="shader: standard; metalness: 0.8; emissive: #00FFAA; side: double"
+                        position="0 0 0.1" scale="0.2 0.2 0.2"
+                        animation__float="property: position; to: 0 -0.1 0; dur: 2000; dir: alternate; loop: true; easing: easeInOutQuad"
+                        animation__glow="property: opacity; to: 0.5; dur: 1000; dir: alternate; loop: true">
+                    </a-entity>
+                </a-entity>
+
+                <!-- Add fireworks -->
+                <a-entity id="firework-left" gltf-model="#fireworkModel" position="-1 0 0" scale="0.03 0.03 0.03"
+                    firework animation-mixer="clip: CINEMA_4D_Main">
+                </a-entity>
+
+                <a-entity id="firework-right" gltf-model="#fireworkModel" position="1 0 0" scale="0.03 0.03 0.03"
+                    firework animation-mixer="clip: CINEMA_4D_Main">
+                </a-entity>
+            </a-entity>
+
+            <!-- Hide gallery initially -->
+            <a-entity id="gallery-container" position="0 0 0" gallery-handler visible="false">
+                <!-- Content wrappers -->
+                <a-entity id="content-wrapper">
+                    <!-- Image 1 -->
+                    <a-plane id="image1-display" position="0 0 0.1" width="1.6" height="0.9"
+                        material="src: #image1; shader: flat; npot: true" visible="true" class="clickable content-item">
+                    </a-plane>
+                    <a-text id="image1-text" value="Hinh anh 1" position="0 -0.55 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="true">
+                    </a-text>
+
+                    <!-- Image 2 -->
+                    <a-plane id="image2-display" position="0 0 0.1" width="1.6" height="0.9"
+                        material="src: #image2; shader: flat; npot: true" visible="false"
+                        class="clickable content-item">
+                    </a-plane>
+                    <a-text id="image2-text" value="Hinh anh 2" position="0 -0.55 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="false">
+                    </a-text>
+
+                    <!-- Video 1 -->
+                    <a-video id="video1-display" position="0 0 0.1" width="1.6" height="0.9" src="#video1"
+                        visible="false" class="clickable content-item">
+                    </a-video>
+                    <a-text id="video1-text" value="Video 1" position="0 -0.55 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="false">
+                    </a-text>
+
+                    <!-- Video 2 -->
+                    <a-video id="video2-display" position="0 0 0.1" width="1.6" height="0.9" src="#video2"
+                        visible="false" class="clickable content-item">
+                    </a-video>
+                    <a-text id="video2-text" value="Video 2" position="0 -0.55 0.1" width="2" align="center"
+                        color="#FFFFFF" visible="false">
+                    </a-text>
+                </a-entity>
+
+                <!-- Navigation buttons -->
+                <a-image id="prev-btn" src="#btn-prev" position="-0.95 0 0.2" height="0.15" width="0.15"
+                    class="clickable"
+                    animation__scale="property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__position="property: position; to: -0.9 0.05 0.2; dur: 2000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__hover="property: scale; to: 1.5 1.5 1.5; startEvents: mouseenter; dur: 300; dir: normal"
+                    animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 300; dir: normal">
+                </a-image>
+
+                <a-image id="next-btn" src="#btn-next" position="0.95 0 0.2" height="0.15" width="0.15"
+                    class="clickable"
+                    animation__scale="property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__position="property: position; to: 0.9 0.05 0.2; dur: 2000; easing: easeInOutQuad; loop: true; dir: alternate"
+                    animation__hover="property: scale; to: 1.5 1.5 1.5; startEvents: mouseenter; dur: 300; dir: normal"
+                    animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 300; dir: normal">
+                </a-image>
+
+                <!-- Update overlay planes to match new dimensions -->
+                <a-plane id="video1-overlay" position="0 0 0.11" width="1.6" height="0.9" visible="false"
+                    class="clickable" material="color: black; transparent: true; opacity: 0.5">
+                </a-plane>
+                <a-plane id="video2-overlay" position="0 0 0.11" width="1.6" height="0.9" visible="false"
+                    class="clickable" material="color: black; transparent: true; opacity: 0.5">
+                </a-plane>
+                <a-image id="play-btn" src="#btn-play" position="0 0 0.12" visible="false" scale="0.2 0.2 0.2"
+                    material="opacity: 0"
+                    animation__fadeIn="property: material.opacity; from: 0; to: 1; dur: 500; startEvents: fadeIn"
+                    animation__fadeOut="property: material.opacity; from: 1; to: 0; dur: 500; startEvents: fadeOut">
+                </a-image>
+            </a-entity>
+
+            <!-- Update gallery toggle position -->
+            <a-entity id="gallery-toggle" position="0.8 -0.7 0" visible="false">
+                <a-image src="#gallery-icon" width="0.15" height="0.15" class="clickable"
+                    animation="property: scale; to: 1.2 1.2 1.2; dur: 1000; dir: alternate; loop: true">
+                </a-image>
+            </a-entity>
         </a-entity>
-    </a-scene>
 
-    <script src="./index.js"></script>
+        <script type="module" src="firebase.js"></script>
+
+        <script type="module" src="ar.js"></script>
 </body>
-
 
 </html>

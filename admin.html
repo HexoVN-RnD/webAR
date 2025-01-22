@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .button-container {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .danger {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+        }
+
+        .export {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Admin Panel</h1>
+    <div class="button-container">
+        <button class="danger" id="resetBtn">Reset All Numbers</button>
+        <button class="export" id="exportBtn">Export to CSV</button>
+    </div>
+    <table id="numberTable">
+        <thead>
+            <tr>
+                <th>Number</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSvYwZ5VQ5r42zEXx8aLACkln8HVgjqQE",
+            authDomain: "yep2025-3f1d9.firebaseapp.com",
+            projectId: "yep2025-3f1d9",
+            storageBucket: "yep2025-3f1d9.firebasestorage.app",
+            messagingSenderId: "482933449467",
+            appId: "1:482933449467:web:d63d2949359905e13b465e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Update table function
+        async function updateTable() {
+            const docRef = doc(db, "default", "numbers");
+            const docSnap = await getDoc(docRef);
+            const tbody = document.querySelector('#numberTable tbody');
+            tbody.innerHTML = '';
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const pickedNumbers = data.pickedNumber || {};
+
+                Object.entries(pickedNumbers).sort((a, b) => Number(a[0]) - Number(b[0])).forEach(([number, name]) => {
+                    const row = tbody.insertRow();
+                    row.insertCell(0).textContent = number;
+                    row.insertCell(1).textContent = name;
+                });
+            }
+        }
+
+        // Reset numbers function
+        async function resetNumbers() {
+            if (confirm('Are you sure you want to reset all numbers? This action cannot be undone.')) {
+                try {
+                    const numbers = Array.from({ length: 99 }, (_, i) => i + 1);
+                    await setDoc(doc(db, "default", "numbers"), {
+                        availableNumbers: numbers,
+                        pickedNumber: {}
+                    });
+                    alert('Numbers reset successfully');
+                    updateTable();
+                } catch (error) {
+                    alert('Error resetting numbers: ' + error.message);
+                }
+            }
+        }
+
+        function exportToCSV() {
+            const table = document.getElementById('numberTable');
+            let csv = [];
+
+            // Add UTF-8 BOM
+            const BOM = '\uFEFF';
+
+            // Add header
+            const header = ['Number', 'Name'];
+            csv.push(header.join(','));
+
+            // Add rows
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('td').forEach(cell => {
+                    rowData.push('"' + cell.textContent.replace(/"/g, '""') + '"');
+                });
+                csv.push(rowData.join(','));
+            });
+
+            // Create CSV content with BOM
+            const csvContent = BOM + csv.join('\n');
+
+            // Create blob with UTF-8 encoding
+            const blob = new Blob([csvContent], {
+                type: 'text/csv;charset=utf-8-sig;'
+            });
+
+            // Download
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'picked_numbers.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Event listeners
+        document.getElementById('resetBtn').addEventListener('click', resetNumbers);
+        document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+
+        // Initial load
+        updateTable();
+
+        // Refresh table every 30 seconds
+        setInterval(updateTable, 30000);
+    </script>
+</body>
+
+</html>

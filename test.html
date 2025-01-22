@@ -1,0 +1,80 @@
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+
+      apiKey: "AIzaSyBSvYwZ5VQ5r42zEXx8aLACkln8HVgjqQE",
+      authDomain: "yep2025-3f1d9.firebaseapp.com",
+      projectId: "yep2025-3f1d9",
+      storageBucket: "yep2025-3f1d9.firebasestorage.app",
+      messagingSenderId: "482933449467",
+      appId: "1:482933449467:web:d63d2949359905e13b465e"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  
+  // Initialize Firestore
+  const db = getFirestore(app);
+
+  async function resetNumbers() {
+    try {
+      const numbers = Array.from({length: 99}, (_, i) => i + 1);
+      await setDoc(doc(db, "default", "numbers"), {
+        availableNumbers: numbers
+      });
+      console.log("Numbers added successfully");
+    } catch (error) {
+      console.error("Error adding numbers: ", error);
+    }
+  }
+
+  async function addNumbers() {
+    try {
+        // Get existing document
+        const docRef = doc(db, "default", "numbers");
+        const docSnap = await getDocs(docRef);
+        
+        // Get current data or initialize empty
+        const currentData = docSnap.exists() ? docSnap.data() : {};
+        const existingNumbers = currentData.availableNumbers || [];
+        const existingPicked = currentData.pickedNumber || {};
+
+        // Create array of numbers 1-99
+        const allNumbers = Array.from({length: 99}, (_, i) => i + 1);
+        
+        // Filter out already existing numbers
+        const newNumbers = allNumbers.filter(num => !existingNumbers.includes(num));
+        
+        // Merge arrays
+        const updatedNumbers = [...existingNumbers, ...newNumbers];
+
+        // Update document with merged data
+        await setDoc(docRef, {
+            availableNumbers: updatedNumbers,
+            pickedNumber: existingPicked
+        }, { merge: true });
+
+        console.log("Numbers updated successfully");
+    } catch (error) {
+        console.error("Error updating numbers: ", error);
+    }
+}
+
+  addNumbers();
+
+  // Function to read from a collection
+  async function getDocuments() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "default"));
+      querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} =>`, doc.data());
+      });
+    } catch (error) {
+      console.error("Error getting documents: ", error);
+    }
+  }
+  // Call the function
+  getDocuments();
+</script>
