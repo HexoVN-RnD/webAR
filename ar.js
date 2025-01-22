@@ -66,6 +66,16 @@ AFRAME.registerComponent('gallery-handler', {
             const currentItem = galleryItems[currentIndex];
             document.querySelector(`#${currentItem.displayId}`).setAttribute('visible', false);
             document.querySelector(`#${currentItem.textId}`).setAttribute('visible', false);
+
+            // Pause and reset video if current item is a video
+            if (currentItem.type === 'video') {
+                const videoElementId = currentItem.id.substring(1); // Remove '#' from ID
+                const video = document.getElementById(videoElementId);
+                if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                }
+            }
         }
 
         function showCurrentItem() {
